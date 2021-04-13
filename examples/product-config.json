@@ -1,0 +1,617 @@
+{
+  "config_settings": {
+    "unit": [
+      {
+        "name": "directory",
+        "regex": "^/|(/[\\w-]+)+$",
+        "examples": ["/tmp/xyz"]
+      },
+      {
+        "name": "password",
+        "regex": "^[a-zA-Z]\\w{5,20}$"
+      },
+      {
+        "name": "port",
+        "regex": "^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$"
+      },
+      {
+        "name": "memory",
+        "regex": "(^\\p{N}+)(?:\\s*)((?:b|k|m|g|t|p|kb|mb|gb|tb|pb)\\b$)",
+        "examples": ["1024b", "1024kb", "500m", "500mb", "1g"],
+        "comment": "Check memory spark properties at https://spark.apache.org/docs/latest/configuration.html"
+      },
+      {
+        "name": "time",
+        "regex": "(^\\p{N}+)(?:\\s*)((?:ns|mus|ms|s|m|min|h|d)\\b$)"
+      },
+      {
+        "name": "number",
+        "regex": "^-?[0-9][0-9,\\.]+$"
+      },
+      {
+        "name": "text",
+        "regex": ".*"
+      }
+    ]
+  },
+  "config_options": [
+    {
+      "option_names": [
+        {
+          "name": "SPARK_MASTER_PORT",
+          "kind": {
+            "type": "conf",
+            "file": "spark-env.sh"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "integer",
+        "min": "1",
+        "max": "65535",
+        "unit": "port"
+      },
+      "default_values": [
+        {
+          "from_version": "0.6.2",
+          "value": "7077"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": true
+        },
+        {
+          "name": "slave",
+          "required": false
+        },
+        {
+          "name": "history-server",
+          "required": false
+        }
+      ],
+      "as_of_version": "0.6.2",
+      "apply_mode": "restart",
+      "description": "Start the master on a different port (default: 7077)"
+    },
+    {
+      "option_names": [
+        {
+          "name": "SPARK_MASTER_WEBUI_PORT",
+          "kind": {
+            "type": "conf",
+            "file": "spark-env.sh"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "integer",
+        "min": "1",
+        "max": "65535",
+        "unit": "port"
+      },
+      "default_values": [
+        {
+          "from_version": "0.6.2",
+          "value": "8080"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": true
+        },
+        {
+          "name": "slave",
+          "required": false
+        },
+        {
+          "name": "history-server",
+          "required": false
+        }
+      ],
+      "as_of_version": "0.6.2",
+      "apply_mode": "restart",
+      "description": "Port for the master web UI (default: 8080)"
+    },
+    {
+      "option_names": [
+        {
+          "name": "SPARK_WORKER_CORES",
+          "kind": {
+            "type": "conf",
+            "file": "spark-env.sh"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "integer"
+      },
+      "roles": [
+        {
+          "name": "master",
+          "required": false
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": false
+        }
+      ],
+      "as_of_version": "0.6.2",
+      "apply_mode": "restart",
+      "description": "Total number of cores to allow Spark jobs to use on the machine (default: all available cores)"
+    },
+    {
+      "option_names": [
+        {
+          "name": "SPARK_WORKER_MEMORY",
+          "kind": {
+            "type": "conf",
+            "file": "spark-env.sh"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "string",
+        "unit": "memory"
+      },
+      "roles": [
+        {
+          "name": "master",
+          "required": false
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": false
+        }
+      ],
+      "as_of_version": "0.6.2",
+      "apply_mode": "restart",
+      "description": "Total amount of memory to allow Spark jobs to use on the machine, e.g. 1000M, 2G (default: total memory minus 1 GB); note that each job's individual memory is configured using SPARK_MEM."
+    },
+    {
+      "option_names": [
+        {
+          "name": "SPARK_WORKER_PORT",
+          "kind": {
+            "type": "conf",
+            "file": "spark-env.sh"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "integer",
+        "min": "1",
+        "max": "65535",
+        "unit": "port"
+      },
+      "roles": [
+        {
+          "name": "master",
+          "required": false
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": false
+        }
+      ],
+      "as_of_version": "0.6.2",
+      "apply_mode": "restart",
+      "description": "Start the Spark worker on a specific port (default: random)"
+    },
+    {
+      "option_names": [
+        {
+          "name": "SPARK_WORKER_WEBUI_PORT",
+          "kind": {
+            "type": "conf",
+            "file": "spark-env.sh"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "integer",
+        "min": "1",
+        "max": "65535",
+        "unit": "port"
+      },
+      "default_values": [
+        {
+          "from_version": "0.6.2",
+          "value": "8081"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": false
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": false
+        }
+      ],
+      "as_of_version": "0.6.2",
+      "apply_mode": "restart",
+      "description": "Port for the worker web UI (default: 8081)"
+    },
+    {
+      "option_names": [
+        {
+          "name": "SPARK_DAEMON_MEMORY",
+          "kind": {
+            "type": "conf",
+            "file": "spark-env.sh"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "string",
+        "unit": "memory"
+      },
+      "default_values": [
+        {
+          "from_version": "0.6.2",
+          "to_version": "1.4.1",
+          "value": "512m"
+        },
+        {
+          "from_version": "1.5.0",
+          "value": "1g"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": true
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": true
+        }
+      ],
+      "as_of_version": "0.6.2",
+      "apply_mode": "restart",
+      "description": "Memory to allocate to the Spark master and worker daemons themselves (default: 512m/1g)"
+    },
+    {
+      "option_names": [
+        {
+          "name": "spark.eventLog.enabled",
+          "kind": {
+            "type": "conf",
+            "file": "spark-defaults.conf"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "bool"
+      },
+      "default_values": [
+        {
+          "from_version": "1.0.0",
+          "value": "false"
+        }
+      ],
+      "recommended_values": [
+        {
+          "from_version": "1.0.0",
+          "value": "true"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": true
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": true
+        }
+      ],
+      "as_of_version": "1.0.0",
+      "apply_mode": "restart",
+      "description": "Whether to log Spark events, useful for reconstructing the Web UI after the application has finished."
+    },
+    {
+      "option_names": [
+        {
+          "name": "spark.eventLog.dir",
+          "kind": {
+            "type": "conf",
+            "file": "spark-defaults.conf"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "string",
+        "unit": "directory"
+      },
+      "default_values": [
+        {
+          "from_version": "1.0.0",
+          "value": "file:///tmp/spark-events"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": true
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": false
+        }
+      ],
+      "as_of_version": "1.0.0",
+      "depends_on": [
+        {
+          "option_names": [
+            {
+              "name": "spark.eventLog.enabled",
+              "kind": {
+                "type": "conf",
+                "file": "spark-defaults.conf"
+              }
+            }
+          ],
+          "value": "true"
+        }
+      ],
+      "apply_mode": "restart",
+      "description": "Base directory in which Spark events are logged, if spark.eventLog.enabled is true. Within this base directory, Spark creates a sub-directory for each application, and logs the events specific to the application in this directory. Users may want to set this to a unified location like an HDFS directory so history files can be read by the history server."
+    },
+    {
+      "option_names": [
+        {
+          "name": "spark.history.fs.logDirectory",
+          "kind": {
+            "type": "conf",
+            "file": "spark-defaults.conf"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "string",
+        "unit": "directory"
+      },
+      "default_values": [
+        {
+          "from_version": "1.1.0",
+          "value": "file:///tmp/spark-events"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": false
+        },
+        {
+          "name": "slave",
+          "required": false
+        },
+        {
+          "name": "history-server",
+          "required": true
+        }
+      ],
+      "depends_on": [
+        {
+          "option_names": [
+            {
+              "name": "spark.eventLog.enabled",
+              "kind": {
+                "type": "conf",
+                "file": "spark-defaults.conf"
+              }
+            }
+          ],
+          "value": "true"
+        }
+      ],
+      "as_of_version": "1.1.0",
+      "apply_mode": "restart",
+      "description": "For the filesystem history provider, the URL to the directory containing application event logs to load. This can be a local file://path, an HDFS path hdfs://namenode/shared/spark-logs or that of an alternative filesystem supported by the Hadoop APIs."
+
+    },
+    {
+      "option_names": [
+        {
+          "name": "spark.history.store.path",
+          "kind": {
+            "type": "conf",
+            "file": "spark-defaults.conf"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "string",
+        "unit": "directory"
+      },
+      "roles": [
+        {
+          "name": "master",
+          "required": false
+        },
+        {
+          "name": "slave",
+          "required": false
+        },
+        {
+          "name": "history-server",
+          "required": true
+        }
+      ],
+      "as_of_version": "2.3.0",
+      "apply_mode": "restart",
+      "description": "Local directory where to cache application history data. If set, the history server will store application data on disk instead of keeping it in memory. The data written to disk will be re-used in the event of a history server restart."
+    },
+    {
+      "option_names": [
+        {
+          "name": "spark.authenticate",
+          "kind": {
+            "type": "conf",
+            "file": "spark-defaults.conf"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "bool"
+      },
+      "default_values": [
+        {
+          "from_version": "1.0.0",
+          "value": "false"
+        }
+      ],
+      "recommended_values": [
+        {
+          "from_version": "1.0.0",
+          "value": "true"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": true
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": true
+        }
+      ],
+      "as_of_version": "1.0.0",
+      "apply_mode": "restart",
+      "description": "Whether Spark authenticates its internal connections."
+    },
+    {
+      "option_names": [
+        {
+          "name": "spark.authenticate.secret",
+          "kind": {
+            "type": "conf",
+            "file": "spark-defaults.conf"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "string",
+        "unit": "password"
+      },
+      "recommended_values": [
+        {
+          "from_version": "1.0.0",
+          "value": "secret"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": true
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": true
+        }
+      ],
+      "as_of_version": "1.0.0",
+      "depends_on": [
+        {
+          "option_names": [
+            {
+              "name": "spark.authenticate",
+              "kind": {
+                "type": "conf",
+                "file": "spark-defaults.conf"
+              }
+            }
+          ],
+          "value": "true"
+        }
+      ],
+      "apply_mode": "restart",
+      "description": "The secret key used in the authentication. SPARK_AUTHENTICATE must be set to true."
+    },
+    {
+      "option_names": [
+        {
+          "name": "spark.port.maxRetries",
+          "kind": {
+            "type": "conf",
+            "file": "spark-defaults.conf"
+          }
+        }
+      ],
+      "datatype": {
+        "type": "integer"
+      },
+      "default_values": [
+        {
+          "from_version": "1.1.1",
+          "value": "16"
+        }
+      ],
+      "recommended_values": [
+        {
+          "from_version": "1.1.1",
+          "value": "0"
+        }
+      ],
+      "roles": [
+        {
+          "name": "master",
+          "required": true
+        },
+        {
+          "name": "slave",
+          "required": true
+        },
+        {
+          "name": "history-server",
+          "required": true
+        }
+      ],
+      "as_of_version": "1.1.1",
+      "apply_mode": "restart",
+      "description": "Maximum number of retries when binding to a port before giving up. When a port is given a specific value (non 0), each subsequent retry will increment the port used in the previous attempt by 1 before retrying. This essentially allows it to try a range of ports from the start port specified to port + maxRetries."
+    }
+  ]
+}

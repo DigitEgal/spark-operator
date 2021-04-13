@@ -5,15 +5,16 @@ mod pod_utils;
 
 use crate::error::Error;
 
-use kube::Api;
-use tracing::{debug, error, info, trace};
-
-use k8s_openapi::api::core::v1::{ConfigMap, Pod};
-use kube::api::{ListParams, Meta};
-use serde_json::json;
-
 use async_trait::async_trait;
+use k8s_openapi::api::core::v1::{ConfigMap, Pod};
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::Condition;
+use kube::api::{ListParams, Meta};
+use kube::Api;
+use kube_runtime::controller::ReconcilerAction;
+use lazy_static::lazy_static;
+use product_config::reader::ConfigJsonReader;
+use product_config::ProductConfig;
+use serde_json::json;
 use stackable_operator::client::Client;
 use stackable_operator::conditions::ConditionStatus;
 use stackable_operator::controller::{Controller, ControllerStrategy, ReconciliationState};
@@ -28,13 +29,19 @@ use stackable_spark_crd::{
     ClusterStatus, CurrentCommand, SparkCluster, SparkClusterSpec, SparkClusterStatus,
     SparkNodeSelector, SparkNodeType, SparkVersion,
 };
-
-use kube_runtime::controller::ReconcilerAction;
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
 use std::str::FromStr;
 use std::time::Duration;
+use tracing::{debug, error, info, trace};
+
+// Load product config here
+// TODO: remove hardcoded and load via CLI
+lazy_static! {
+    static ref CONFIG: ProductConfig =
+        ProductConfig::new(ConfigJsonReader::new("examples/product-config.json")).unwrap();
+}
 
 type SparkReconcileResult = ReconcileResult<error::Error>;
 
@@ -639,7 +646,8 @@ impl SparkState {
 
                 while current_count < spec_pod_count {
                     let pod = self.create_pod(selector, node_type, hash).await?;
-                    self.create_config_maps(node_type, selector, hash).await?;
+                    self.create_config_maps(node_type, selector, hash, &CONFIG)
+                        .await?;
                     debug!("Creating {} pod '{}'", node_type.as_str(), Meta::name(&pod));
                     current_count += 1;
                     applied_changes = true;
@@ -781,6 +789,7 @@ impl SparkState {
         node_type: &SparkNodeType,
         selector: &SparkNodeSelector,
         hash: &str,
+        product_config: &ProductConfig,
     ) -> Result<(), Error> {
         let config_maps = config::create_config_maps(
             &self.context.resource,
@@ -788,6 +797,7 @@ impl SparkState {
             selector,
             node_type,
             hash,
+            product_config,
         )?;
 
         for cm in config_maps {

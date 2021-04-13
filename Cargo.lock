@@ -1435,6 +1435,7 @@ dependencies = [
  "k8s-openapi",
  "kube",
  "kube-runtime",
+ "lazy_static",
  "product-config",
  "semver",
  "serde",

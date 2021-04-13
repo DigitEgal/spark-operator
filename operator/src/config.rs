@@ -1,8 +1,9 @@
 //! This module contains all methods that are responsible for setting / adapting configuration
 //! parameters in the Pods and respective ConfigMaps.
-
 use k8s_openapi::api::core::v1::{ConfigMap, EnvVar};
 use kube::api::Meta;
+use product_config::types::OptionKind;
+use product_config::{ProductConfig, ProductConfigResult};
 use stackable_operator::config_map::create_config_map;
 use stackable_operator::error::OperatorResult;
 use stackable_spark_common::constants::*;
@@ -10,6 +11,7 @@ use stackable_spark_crd::{
     ConfigOption, SparkCluster, SparkClusterSpec, SparkNode, SparkNodeSelector, SparkNodeType,
 };
 use std::collections::{BTreeMap, HashMap};
+use tracing::{error, warn};
 
 /// The worker start command needs to be extended with all known master nodes and ports.
 /// The required URLs for the starting command are in format: '<master-node-name>:<master-port'
@@ -258,6 +260,7 @@ pub fn create_config_map_name(cluster_name: &str, node_type: &SparkNodeType, has
 /// Create all required config maps and respective config map data.
 ///
 /// # Arguments
+/// * `product_config` - ProductConfig to get and check configuration properties
 /// * `resource` - SparkCluster
 /// * `spec` - SparkClusterSpec containing common cluster config options
 /// * `selector` - SparkClusterSelector containing node specific config options
@@ -270,12 +273,26 @@ pub fn create_config_maps(
     selector: &SparkNodeSelector,
     node_type: &SparkNodeType,
     hash: &str,
+    product_config: &ProductConfig,
 ) -> OperatorResult<Vec<ConfigMap>> {
-    let config_properties = get_config_properties(&spec, selector);
-    let env_vars = get_env_variables(selector);
+    let spark_defaults_conf = process_product_config(
+        product_config,
+        &resource.spec.version.to_string(),
+        &OptionKind::Conf(SPARK_DEFAULTS_CONF.to_string()),
+        Some(node_type.as_str()),
+        &get_config_properties(&spec, selector),
+    );
 
-    let conf = convert_map_to_string(&config_properties, " ");
-    let env = convert_map_to_string(&env_vars, "=");
+    let spark_env = process_product_config(
+        product_config,
+        &resource.spec.version.to_string(),
+        &OptionKind::Conf(SPARK_ENV_SH.to_string()),
+        Some(node_type.as_str()),
+        &get_env_variables(selector),
+    );
+
+    let conf = convert_map_to_string(&spark_defaults_conf, " ");
+    let env = convert_map_to_string(&spark_env, "=");
 
     let mut data = BTreeMap::new();
     data.insert(SPARK_DEFAULTS_CONF.to_string(), conf);
@@ -287,11 +304,60 @@ pub fn create_config_maps(
     Ok(vec![cm])
 }
 
+/// Check and retrieve config data from product config
+///
+/// # Arguments
+/// * `product_config` - ProductConfig to get and check configuration properties
+/// * `version` - Current product version the controller operates on
+/// * `kind` - OptionKind like conf, env
+/// * `role` - Node type the config map is for e.g. master, worker, history-server
+/// * `user_config` - Data map extracted from provided custom resource user values
+///
+fn process_product_config(
+    product_config: &ProductConfig,
+    version: &str,
+    kind: &OptionKind,
+    role: Option<&str>,
+    user_config: &HashMap<String, String>,
+) -> HashMap<String, String> {
+    let properties = product_config.get(&version, kind, role, user_config);
+
+    let mut conf = HashMap::new();
+    for (name, value) in &properties {
+        match value {
+            // we do not explicitly set default values
+            ProductConfigResult::Default(_) => {}
+            ProductConfigResult::Recommended(recommended) => {
+                conf.insert(name.clone(), recommended.clone());
+            }
+            ProductConfigResult::Valid(valid) => {
+                conf.insert(name.clone(), valid.clone());
+            }
+            ProductConfigResult::Warn(_, error) => {
+                warn!("ProductConfig: {:?}", error);
+            }
+            ProductConfigResult::Error(error) => {
+                error!("ProductConfig: {:?}", error);
+            }
+        }
+    }
+    conf
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use lazy_static::lazy_static;
+    use product_config::reader::ConfigJsonReader;
+    use product_config::ProductConfig;
     use stackable_spark_common::constants;
     use stackable_spark_test_utils::cluster::{Data, Load, TestSparkCluster};
+
+    // load product config here
+    lazy_static! {
+        static ref CONFIG: ProductConfig =
+            ProductConfig::new(ConfigJsonReader::new("../examples/product-config.json")).unwrap();
+    }
 
     fn setup() -> SparkCluster {
         let mut cluster: SparkCluster = TestSparkCluster::load();
@@ -470,6 +536,7 @@ mod tests {
             selector,
             &SparkNodeType::Master,
             hash,
+            &CONFIG,
         )
         .unwrap();
 
