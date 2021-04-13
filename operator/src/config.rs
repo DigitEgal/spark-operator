@@ -177,8 +177,6 @@ fn get_config_properties(
         }
     }
 
-    // TODO: validate and add
-
     config
 }
 

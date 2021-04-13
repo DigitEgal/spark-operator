@@ -667,7 +667,7 @@ impl SparkState {
     /// to fall back on other masters, if the primary master fails.
     /// Therefore we always need to keep the workers updated in terms of available master urls.
     /// Available master urls are hashed and stored as label in the worker pod. If the label differs
-    /// from the spec, we need to replace (delete and and) the workers in a rolling fashion.
+    /// from the spec, we need to replace (delete and add) the workers in a rolling fashion.
     pub async fn check_worker_master_urls(&self) -> SparkReconcileResult {
         if let Some(pod_info) = &self.pod_information {
             let worker_pods = pod_info.get_all_pods(Some(SparkNodeType::Worker));
