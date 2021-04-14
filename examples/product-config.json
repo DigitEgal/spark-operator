@@ -60,14 +60,6 @@
       "roles": [
         {
           "name": "master",
-          "required": true
-        },
-        {
-          "name": "slave",
-          "required": false
-        },
-        {
-          "name": "history-server",
           "required": false
         }
       ],
@@ -100,14 +92,6 @@
       "roles": [
         {
           "name": "master",
-          "required": true
-        },
-        {
-          "name": "slave",
-          "required": false
-        },
-        {
-          "name": "history-server",
           "required": false
         }
       ],
@@ -130,15 +114,7 @@
       },
       "roles": [
         {
-          "name": "master",
-          "required": false
-        },
-        {
           "name": "slave",
-          "required": true
-        },
-        {
-          "name": "history-server",
           "required": false
         }
       ],
@@ -162,15 +138,7 @@
       },
       "roles": [
         {
-          "name": "master",
-          "required": false
-        },
-        {
           "name": "slave",
-          "required": true
-        },
-        {
-          "name": "history-server",
           "required": false
         }
       ],
@@ -196,15 +164,7 @@
       },
       "roles": [
         {
-          "name": "master",
-          "required": false
-        },
-        {
           "name": "slave",
-          "required": true
-        },
-        {
-          "name": "history-server",
           "required": false
         }
       ],
@@ -236,15 +196,7 @@
       ],
       "roles": [
         {
-          "name": "master",
-          "required": false
-        },
-        {
           "name": "slave",
-          "required": true
-        },
-        {
-          "name": "history-server",
           "required": false
         }
       ],
@@ -280,15 +232,15 @@
       "roles": [
         {
           "name": "master",
-          "required": true
+          "required": false
         },
         {
           "name": "slave",
-          "required": true
+          "required": false
         },
         {
           "name": "history-server",
-          "required": true
+          "required": false
         }
       ],
       "as_of_version": "0.6.2",
@@ -323,15 +275,15 @@
       "roles": [
         {
           "name": "master",
-          "required": true
+          "required": false
         },
         {
           "name": "slave",
-          "required": true
+          "required": false
         },
         {
           "name": "history-server",
-          "required": true
+          "required": false
         }
       ],
       "as_of_version": "1.0.0",
@@ -361,14 +313,10 @@
       "roles": [
         {
           "name": "master",
-          "required": true
+          "required": false
         },
         {
           "name": "slave",
-          "required": true
-        },
-        {
-          "name": "history-server",
           "required": false
         }
       ],
@@ -412,14 +360,6 @@
       ],
       "roles": [
         {
-          "name": "master",
-          "required": false
-        },
-        {
-          "name": "slave",
-          "required": false
-        },
-        {
           "name": "history-server",
           "required": true
         }
@@ -459,16 +399,8 @@
       },
       "roles": [
         {
-          "name": "master",
-          "required": false
-        },
-        {
-          "name": "slave",
-          "required": false
-        },
-        {
           "name": "history-server",
-          "required": true
+          "required": false
         }
       ],
       "as_of_version": "2.3.0",
@@ -503,15 +435,15 @@
       "roles": [
         {
           "name": "master",
-          "required": true
+          "required": false
         },
         {
           "name": "slave",
-          "required": true
+          "required": false
         },
         {
           "name": "history-server",
-          "required": true
+          "required": false
         }
       ],
       "as_of_version": "1.0.0",
@@ -541,15 +473,15 @@
       "roles": [
         {
           "name": "master",
-          "required": true
+          "required": false
         },
         {
           "name": "slave",
-          "required": true
+          "required": false
         },
         {
           "name": "history-server",
-          "required": true
+          "required": false
         }
       ],
       "as_of_version": "1.0.0",

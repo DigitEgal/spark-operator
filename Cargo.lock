@@ -38,9 +38,9 @@ checksum = "8f8cb5d814eb646a863c4f24978cff2880c4be96ad8cde2c0f0678732902e271"
 
 [[package]]
 name = "async-trait"
-version = "0.1.48"
+version = "0.1.49"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36ea56748e10732c49404c153638a15ec3d6211ec5ff35d9bb20e13b93576adf"
+checksum = "589652ce7ccb335d1e7ecb3be145425702b290dbcb7029bbeaae263fc1d87b48"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -985,7 +985,7 @@ dependencies = [
 [[package]]
 name = "product-config"
 version = "0.1.0"
-source = "git+https://github.com/stackabletech/product-config.git?branch=start#0f3b996862f52097bc18bd6f24dccb1dcb11accc"
+source = "git+https://github.com/stackabletech/product-config.git?branch=start#21c45c6b8d52faea31a0cabd0268675150e90510"
 dependencies = [
  "regex",
  "semver",
@@ -1051,9 +1051,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.2.5"
+version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94341e4e44e24f6b591b59e47a8a027df12e008d73fd5672dbea9cc22f4507d9"
+checksum = "8270314b5ccceb518e7e578952f0b72b88222d02e8f77f5ecf7abbb673539041"
 dependencies = [
  "bitflags",
 ]
