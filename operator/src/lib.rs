@@ -531,7 +531,7 @@ impl SparkState {
     /// abort the reconcile action.
     pub async fn process_commands(&mut self) -> SparkReconcileResult {
         if let Some(status) = &self.status {
-            // command running
+            // if a current_command is available we are currently processing that command
             if let Some(current_command) = &status.current_command {
                 let running_command = command_utils::get_command_from_ref(
                     &self.context.client,
@@ -548,7 +548,7 @@ impl SparkState {
                         current_command,
                     )
                     .await?);
-            // no commands running -> check for available commands
+            // if no current commands are running, check if any commands are available
             } else if let Some(next_command) =
                 command_utils::get_next_command(&self.context.client).await?
             {
