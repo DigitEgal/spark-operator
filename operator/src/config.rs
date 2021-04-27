@@ -2,8 +2,8 @@
 //! parameters in the Pods and respective ConfigMaps.
 use k8s_openapi::api::core::v1::{ConfigMap, EnvVar};
 use kube::api::Meta;
-use product_config::types::OptionKind;
-use product_config::{ProductConfig, ProductConfigResult};
+use product_config::types::PropertyNameKind;
+use product_config::{ProductConfigSpec, PropertyValidationResult};
 use stackable_operator::config_map::create_config_map;
 use stackable_operator::error::OperatorResult;
 use stackable_spark_common::constants::*;
@@ -271,12 +271,12 @@ pub fn create_config_maps(
     selector: &SparkNodeSelector,
     node_type: &SparkNodeType,
     hash: &str,
-    product_config: &ProductConfig,
+    product_config: &ProductConfigSpec,
 ) -> OperatorResult<Vec<ConfigMap>> {
     let spark_defaults_conf = process_product_config(
         product_config,
         &resource.spec.version.to_string(),
-        &OptionKind::Conf(SPARK_DEFAULTS_CONF.to_string()),
+        &PropertyNameKind::Conf(SPARK_DEFAULTS_CONF.to_string()),
         Some(node_type.as_str()),
         &get_config_properties(&spec, selector),
     );
@@ -284,7 +284,7 @@ pub fn create_config_maps(
     let spark_env = process_product_config(
         product_config,
         &resource.spec.version.to_string(),
-        &OptionKind::Conf(SPARK_ENV_SH.to_string()),
+        &PropertyNameKind::Conf(SPARK_ENV_SH.to_string()),
         Some(node_type.as_str()),
         &get_env_variables(selector),
     );
@@ -312,30 +312,33 @@ pub fn create_config_maps(
 /// * `user_config` - Data map extracted from provided custom resource user values
 ///
 fn process_product_config(
-    product_config: &ProductConfig,
+    product_config: &ProductConfigSpec,
     version: &str,
-    kind: &OptionKind,
+    kind: &PropertyNameKind,
     role: Option<&str>,
     user_config: &HashMap<String, String>,
 ) -> HashMap<String, String> {
     let properties = product_config.get(&version, kind, role, user_config);
 
     let mut conf = HashMap::new();
-    for (name, value) in &properties {
-        match value {
-            // we do not explicitly set default values
-            ProductConfigResult::Default(_) => {}
-            ProductConfigResult::Recommended(recommended) => {
-                conf.insert(name.clone(), recommended.clone());
-            }
-            ProductConfigResult::Valid(valid) => {
-                conf.insert(name.clone(), valid.clone());
-            }
-            ProductConfigResult::Warn(_, error) => {
-                warn!("ProductConfig: {:?}", error);
-            }
-            ProductConfigResult::Error(error) => {
-                error!("ProductConfig: {:?}", error);
+
+    if let Ok(result) = properties {
+        for (name, value) in &result {
+            match value {
+                // we do not explicitly set default values
+                PropertyValidationResult::Default(_) => {}
+                PropertyValidationResult::RecommendedDefault(recommended) => {
+                    conf.insert(name.clone(), recommended.clone());
+                }
+                PropertyValidationResult::Valid(valid) => {
+                    conf.insert(name.clone(), valid.clone());
+                }
+                PropertyValidationResult::Warn(_, error) => {
+                    warn!("ProductConfig: {:?}", error);
+                }
+                PropertyValidationResult::Error(error) => {
+                    error!("ProductConfig: {:?}", error);
+                }
             }
         }
     }
@@ -347,14 +350,17 @@ mod tests {
     use super::*;
     use lazy_static::lazy_static;
     use product_config::reader::ConfigJsonReader;
-    use product_config::ProductConfig;
+    use product_config::ProductConfigSpec;
     use stackable_spark_common::constants;
     use stackable_spark_test_utils::cluster::{Data, Load, TestSparkCluster};
 
     // load product config here
     lazy_static! {
-        static ref CONFIG: ProductConfig =
-            ProductConfig::new(ConfigJsonReader::new("../examples/product-config.json")).unwrap();
+        static ref CONFIG: ProductConfigSpec = ProductConfigSpec::new(ConfigJsonReader::new(
+            "../examples/product_config_spec.json",
+            "../examples/product_config_properties.json"
+        ))
+        .unwrap();
     }
 
     fn setup() -> SparkCluster {

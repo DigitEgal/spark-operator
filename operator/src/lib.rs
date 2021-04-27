@@ -13,7 +13,7 @@ use kube::Api;
 use kube_runtime::controller::ReconcilerAction;
 use lazy_static::lazy_static;
 use product_config::reader::ConfigJsonReader;
-use product_config::ProductConfig;
+use product_config::ProductConfigSpec;
 use serde_json::json;
 use stackable_operator::client::Client;
 use stackable_operator::conditions::ConditionStatus;
@@ -39,8 +39,11 @@ use tracing::{debug, error, info, trace};
 // Load product config here
 // TODO: remove hardcoded and load via CLI
 lazy_static! {
-    static ref CONFIG: ProductConfig =
-        ProductConfig::new(ConfigJsonReader::new("examples/product-config.json")).unwrap();
+    static ref CONFIG: ProductConfigSpec = ProductConfigSpec::new(ConfigJsonReader::new(
+        "examples/product_config_spec.json",
+        "examples/product_config_properties.json"
+    ))
+    .unwrap();
 }
 
 type SparkReconcileResult = ReconcileResult<error::Error>;
@@ -789,7 +792,7 @@ impl SparkState {
         node_type: &SparkNodeType,
         selector: &SparkNodeSelector,
         hash: &str,
-        product_config: &ProductConfig,
+        product_config: &ProductConfigSpec,
     ) -> Result<(), Error> {
         let config_maps = config::create_config_maps(
             &self.context.resource,
